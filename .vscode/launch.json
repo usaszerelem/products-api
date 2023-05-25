@@ -1,0 +1,29 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug",
+            "outputCapture": "std",
+            "skipFiles": ["<node_internals>/**"],
+            "program": "${workspaceFolder}/src/index.ts",
+            "outFiles": ["${workspaceFolder}/**/*.js"],
+            "env": {
+                "NODE_ENV": "development",
+                "MONGO_HOST": "mongodb://localhost:27017/products",
+                "NODE_TLS_REJECT_UNAUTHORIZED": "0",
+                "LOG_LEVEL": "debug",
+                "CONSOLELOG_ENABLED": "1",
+                "PORT": "3000",
+                "AUDIT_API_KEY": "1234abcd",
+                "AUDIT_URL": "https://localhost:3001/api/audit",
+                "JWT_PRIVATE_KEY": "HappyJoy",
+                "JWT_EXPIRATION": "10h"
+            }
+        }
+    ]
+}
