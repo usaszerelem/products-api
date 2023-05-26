@@ -266,13 +266,7 @@ router.get(
                     return res.status(result[0]).json(result[1]);
                 }
             } else {
-                let result: [number, ProductsReturn | string];
-
-                if (_.isUndefined(req.query.category) === false) {
-                    result = await getProductsByField(req, 'category');
-                } else {
-                    result = await getProductsByField(req);
-                }
+                const result = await getProductsByField(req);
 
                 if (typeof result[1] === 'string') {
                     return res.status(result[0]).send(result[1]);
@@ -299,33 +293,21 @@ router.get(
  * object as value.
  */
 async function getProductsByField(
-    req: Request,
-    field: string = ''
+    req: Request
 ): Promise<[number, ProductsReturn | string]> {
     const pageNumber: number = req.query.pageNumber ? +req.query.pageNumber : 1;
     const pageSize: number = req.query.pageSize ? +req.query.pageSize : 10;
-
-    let filter = {};
-
-    if (field == 'category') {
-        filter = { category: req.query.category };
-
-        logger.info(
-            `Requesting list of products by category: ${req.query.category}`
-        );
-    } else {
-        logger.info(`Requesting list of all products`);
-    }
-
-    let getFields = {};
-
-    if (req.body.select) {
-        getFields = selectFields(req.body.select);
-    }
+    const filter = getFilter(
+        req.query.filterByField as string,
+        req.query.filterValue as string
+    );
+    const getFields = selectFields(req.body.select);
+    const sortField = getSortField(req.query.sortBy as string);
 
     const products = (await Product.find(filter)
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize)
+        .sort(sortField)
         .select(getFields)) as ProductDto[];
 
     logger.info(`Returning ${products.length} products`);
@@ -344,11 +326,56 @@ async function getProductsByField(
     }
 }
 
+/**
+ * This method constructs an object for the database to filter documents
+ * @param filterByField - optional query parameter to field name to filter by
+ * @param filterValue - value to filter by
+ * @returns JSON object for DB to filter on.
+ */
+
+function getFilter(
+    filterByField: string | undefined,
+    filterValue: string | undefined
+) {
+    var obj: any = {};
+
+    if (filterByField !== undefined && filterValue !== undefined) {
+        obj[filterByField] = filterValue;
+    }
+
+    return obj;
+}
+
+/**
+ *
+ * @param sortBy - optional field that information is requested to be sorted by
+ * @returns JSON object for DB query to sort by requested field
+ */
+function getSortField(sortBy: string | undefined) {
+    var obj: any = {};
+
+    if (sortBy !== undefined) {
+        obj[sortBy] = 1;
+    }
+
+    return obj;
+}
+
+/**
+ *
+ * @param fieldRequested Return a JSON object that specified to the database
+ * the list of fields that the user is requesting.
+ * @returns JSON object listing requested fields.
+ */
 function selectFields(fieldRequested: string[]) {
     var obj: any = {};
-    fieldRequested.forEach((field) => {
-        obj[field] = 1;
-    });
+
+    if (fieldRequested !== undefined) {
+        fieldRequested.forEach((field) => {
+            obj[field] = 1;
+        });
+    }
+
     return obj;
 }
 
