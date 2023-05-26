@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Joi = require('joi-oid');
 import jwt from 'jsonwebtoken';
 import UserDto from '../dtos/UserDto';
+import { EAllowedOperations } from './EAllowedOperations';
 
 require('../utils/constants');
 
@@ -98,7 +99,16 @@ export function validateUser(user: typeof User) {
             .max(PASSWORD_MAX_LENGTH)
             .required(),
         audit: Joi.boolean().required(),
-        operations: Joi.array().items(Joi.string()),
+        operations: Joi.array().items(
+            Joi.string().valid(
+                EAllowedOperations.ProdDelete,
+                EAllowedOperations.ProdList,
+                EAllowedOperations.ProdUpsert,
+                EAllowedOperations.UserDelete,
+                EAllowedOperations.UserList,
+                EAllowedOperations.UserUpsert
+            )
+        ),
     }).options({ allowUnknown: false });
 
     return schema.validate(user);

@@ -1,6 +1,6 @@
 // Create an interface representing a document in MongoDB.
 export default interface ProductDto {
-    productId: string;
+    _id: string;
     sku: string;
     unitOfMeasure: string;
     materialID: string;

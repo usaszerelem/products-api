@@ -16,7 +16,7 @@ export async function auditActivity(
     method: HttpMethod,
     data: string
 ): Promise<boolean> {
-    if (req.Jwt.audit == true) {
+    if (req.Jwt.audit == true && process.env.AUDIT_URL !== undefined) {
         return await sendAudit(req.Jwt.userId, method, data);
     } else {
         return true;
@@ -32,10 +32,6 @@ async function sendAudit(
     data: string
 ): Promise<boolean> {
     let success = true;
-
-    if (process.env.AUDIT_URL === undefined) {
-        return false;
-    }
 
     try {
         const srvcName = 'product-api';
@@ -60,7 +56,7 @@ async function sendAudit(
             'x-api-key': process.env.AUDIT_API_KEY,
         };
 
-        const response = await axios.post(process.env.AUDIT_URL, strPayload, {
+        const response = await axios.post(process.env.AUDIT_URL!, strPayload, {
             headers: reqHeader,
         });
 

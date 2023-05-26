@@ -25,7 +25,7 @@ router.post(
     async (req: Request, res: Response) => {
         try {
             // Ensure password is not exposed
-            let userMinData = _.pick(req.body, ['email', 'roles']);
+            let userMinData = _.pick(req.body, ['email', 'operations']);
             logger.info(`User Create received:` + JSON.stringify(userMinData));
 
             const { error } = validateUser(req.body);
@@ -57,11 +57,12 @@ router.post(
 
             user = user.toObject();
             user = _.omit(user, 'password');
-            logger.debug('Omit returned: ' + JSON.stringify(user));
-
-            const dataToSend = JSON.stringify(
-                _.omit(user.toObject(), 'password')
+            logger.debug(
+                'Omit returned. Should not have "password": ' +
+                    JSON.stringify(user)
             );
+
+            const dataToSend = JSON.stringify(user);
 
             if (
                 !auditActivity(
@@ -75,8 +76,12 @@ router.post(
 
             return res.status(200).json(user);
         } catch (ex) {
-            logger.error(JSON.stringify(ex));
-            return res.status(500).send(ex);
+            const msg =
+                ex instanceof Error
+                    ? ex.message
+                    : 'Fatal Exception - Users POST';
+            logger.error(JSON.stringify(msg));
+            return res.status(500).send(msg);
         }
     }
 );
@@ -122,8 +127,10 @@ router.get('/me', userAuth, async (req: Request, res: Response) => {
 
         return res.status(200).json(_.omit(user.toObject(), 'password'));
     } catch (ex) {
-        logger.error(JSON.stringify(ex));
-        return res.status(500).send(ex);
+        const msg =
+            ex instanceof Error ? ex.message : 'Fatal Exception - Users GET';
+        logger.error(JSON.stringify(msg));
+        return res.status(500).send(msg);
     }
 });
 
@@ -218,8 +225,12 @@ router.get(
                 return res.status(200).json(users);
             }
         } catch (ex) {
-            logger.error(JSON.stringify(ex));
-            return res.status(500).send(ex);
+            const msg =
+                ex instanceof Error
+                    ? ex.message
+                    : 'Fatal Exception - Users GET';
+            logger.error(JSON.stringify(msg));
+            return res.status(500).send(msg);
         }
     }
 );
