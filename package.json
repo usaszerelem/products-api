@@ -2,10 +2,11 @@
     "name": "products-api",
     "version": "1.0.0",
     "description": "",
-    "main": "index.js",
+    "main": "./dist/index.js",
     "scripts": {
         "start": "ts-node ./src/index.ts",
-        "build": "tsc --build && copyfiles ./ssl/* ./dist"
+        "build": "tsc -p tsconfig.build.json && copyfiles ./ssl/* ./dist",
+        "test": "jest"
     },
     "keywords": [],
     "author": "",

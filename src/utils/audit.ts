@@ -16,7 +16,9 @@ export async function auditActivity(
     method: HttpMethod,
     data: string
 ): Promise<boolean> {
-    if (req.Jwt.audit == true && process.env.AUDIT_URL !== undefined) {
+    const auditUrl = process.env.AUDIT_URL as string;
+
+    if (req.Jwt.audit == true && auditUrl?.length > 0) {
         return await sendAudit(req.Jwt.userId, method, data);
     } else {
         return true;

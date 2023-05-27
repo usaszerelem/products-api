@@ -2,6 +2,7 @@
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    // "AUDIT_URL": "https://localhost:3001/api/audit",
     "version": "0.2.0",
     "configurations": [
         {
@@ -20,7 +21,7 @@
                 "CONSOLELOG_ENABLED": "1",
                 "PORT": "3000",
                 "AUDIT_API_KEY": "1234abcd",
-                //"AUDIT_URL": "https://localhost:3001/api/audit",
+                "AUDIT_URL": "",
                 "JWT_PRIVATE_KEY": "HappyJoy",
                 "JWT_EXPIRATION": "10h"
             }
