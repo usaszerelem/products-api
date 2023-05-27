@@ -31,7 +31,7 @@ async function sendAudit(
     method: HttpMethod,
     data: string
 ): Promise<boolean> {
-    let success = true;
+    let success: boolean = true;
 
     try {
         const srvcName = 'product-api';
@@ -62,12 +62,7 @@ async function sendAudit(
 
         logger.debug(response.data);
     } catch (ex) {
-        if (ex instanceof Error) {
-            logger.error(ex.message);
-        } else {
-            logger.error('Unable to audit activity');
-        }
-
+        logger.error('Audit connection refused');
         success = false;
     }
 

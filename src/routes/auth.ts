@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import AppLogger from '../utils/Logger';
-import { User, generateAuthToken } from '../models/users.js';
+import { User, generateAuthToken } from '../models/users';
 import bcrypt from 'bcrypt';
 import Joi from 'joi';
 import _ from 'underscore';

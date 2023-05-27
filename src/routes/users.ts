@@ -64,13 +64,13 @@ router.post(
 
             const dataToSend = JSON.stringify(user);
 
-            if (
-                !auditActivity(
-                    req as RequestDto,
-                    HttpMethod.Post,
-                    JSON.stringify(dataToSend)
-                )
-            ) {
+            const success = await auditActivity(
+                req as RequestDto,
+                HttpMethod.Post,
+                JSON.stringify(dataToSend)
+            );
+
+            if (success === false) {
                 return res.status(424).send('Audit server not available');
             }
 
@@ -103,27 +103,15 @@ router.get('/me', userAuth, async (req: Request, res: Response) => {
 
         const dataToSend = JSON.stringify(_.omit(user.toObject(), 'password'));
 
-        if (
-            !auditActivity(
-                req as RequestDto,
-                HttpMethod.Get,
-                JSON.stringify(dataToSend)
-            )
-        ) {
+        const success = await auditActivity(
+            req as RequestDto,
+            HttpMethod.Get,
+            JSON.stringify(dataToSend)
+        );
+
+        if (success === false) {
             return res.status(424).send('Audit server not available');
         }
-
-        /* Refactor when audit was implemented
-        // If auditing is enabled for this user, then audit this call
-        if (req.user.audit === true) {
-            const dataToSend = JSON.stringify(_.omit(user, "password"));
-            const success = await audit.send(req.user.userId, "GET", dataToSend);
-        
-            if (success === false) {
-                return res.status(424).send('Audit server not available');
-            }
-        }
-        */
 
         return res.status(200).json(_.omit(user.toObject(), 'password'));
     } catch (ex) {
@@ -160,13 +148,13 @@ router.get(
                     logger.info('User found: ' + user!._id);
                     logger.debug(JSON.stringify(user));
 
-                    if (
-                        !auditActivity(
-                            req as RequestDto,
-                            HttpMethod.Get,
-                            JSON.stringify(user)
-                        )
-                    ) {
+                    const success = await auditActivity(
+                        req as RequestDto,
+                        HttpMethod.Get,
+                        JSON.stringify(user)
+                    );
+
+                    if (success === false) {
                         return res
                             .status(424)
                             .send('Audit server not available');
@@ -188,13 +176,13 @@ router.get(
                     logger.info('User found: ' + user!._id);
                     logger.debug(JSON.stringify(user));
 
-                    if (
-                        !auditActivity(
-                            req as RequestDto,
-                            HttpMethod.Get,
-                            JSON.stringify(user)
-                        )
-                    ) {
+                    const success = await auditActivity(
+                        req as RequestDto,
+                        HttpMethod.Get,
+                        JSON.stringify(user)
+                    );
+
+                    if (success === false) {
                         return res
                             .status(424)
                             .send('Audit server not available');
@@ -212,13 +200,13 @@ router.get(
 
                 logger.info(`Returning ${users.length} users`);
 
-                if (
-                    !auditActivity(
-                        req as RequestDto,
-                        HttpMethod.Get,
-                        JSON.stringify(users)
-                    )
-                ) {
+                const success = await auditActivity(
+                    req as RequestDto,
+                    HttpMethod.Get,
+                    JSON.stringify(users)
+                );
+
+                if (success === false) {
                     return res.status(424).send('Audit server not available');
                 }
 

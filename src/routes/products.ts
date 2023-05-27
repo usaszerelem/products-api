@@ -74,13 +74,13 @@ router.post(
             logger.info('Product was added. ProductID: ' + product._id);
             logger.debug(JSON.stringify(product));
 
-            if (
-                !auditActivity(
-                    req as RequestDto,
-                    HttpMethod.Post,
-                    JSON.stringify(product)
-                )
-            ) {
+            const success = await auditActivity(
+                req as RequestDto,
+                HttpMethod.Post,
+                JSON.stringify(product)
+            );
+
+            if (success === false) {
                 return res.status(424).send('Audit server not available');
             }
 
@@ -140,13 +140,13 @@ router.put(
             logger.info('Product was updated. ProductID: ' + productId);
             logger.debug(JSON.stringify(updatedProduct));
 
-            if (
-                !auditActivity(
-                    req as RequestDto,
-                    HttpMethod.Put,
-                    JSON.stringify(updatedProduct)
-                )
-            ) {
+            const success = await auditActivity(
+                req as RequestDto,
+                HttpMethod.Put,
+                JSON.stringify(updatedProduct)
+            );
+
+            if (success === false) {
                 return res.status(424).send('Audit server not available');
             }
 
@@ -221,13 +221,13 @@ router.patch(
             logger.info('Product was patched. ProductID: ' + product.productId);
             logger.debug(JSON.stringify(product));
 
-            if (
-                !auditActivity(
-                    req as RequestDto,
-                    HttpMethod.Patch,
-                    JSON.stringify(product)
-                )
-            ) {
+            const success = await auditActivity(
+                req as RequestDto,
+                HttpMethod.Patch,
+                JSON.stringify(product)
+            );
+
+            if (success === false) {
                 return res.status(424).send('Audit server not available');
             }
 
@@ -295,6 +295,8 @@ router.get(
 async function getProductsByField(
     req: Request
 ): Promise<[number, ProductsReturn | string]> {
+    logger.debug('Inside getProductsByField');
+
     const pageNumber: number = req.query.pageNumber ? +req.query.pageNumber : 1;
     const pageSize: number = req.query.pageSize ? +req.query.pageSize : 10;
     const filter = getFilter(
@@ -304,24 +306,32 @@ async function getProductsByField(
     const getFields = selectFields(req.body.select);
     const sortField = getSortField(req.query.sortBy as string);
 
+    logger.debug(`pageNumber: ${pageNumber}`);
+    logger.debug(`pageSize: ${pageSize}`);
+    logger.debug('filter: ' + JSON.stringify(filter));
+    logger.debug('sortField: ' + JSON.stringify(sortField));
+    logger.debug('Requested return fields: ' + JSON.stringify(getFields));
+
     const products = (await Product.find(filter)
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize)
         .sort(sortField)
         .select(getFields)) as ProductDto[];
 
-    logger.info(`Returning ${products.length} products`);
+    const success = await auditActivity(
+        req as RequestDto,
+        HttpMethod.Get,
+        JSON.stringify(products)
+    );
 
-    if (
-        !auditActivity(
-            req as RequestDto,
-            HttpMethod.Get,
-            JSON.stringify(products)
-        )
-    ) {
-        return [424, 'Audit server not available'];
+    if (success === false) {
+        const msg = 'Audit server not available';
+        logger.error(msg);
+        return [424, msg];
     } else {
         const response = buildResponse(req, pageNumber, pageSize, products);
+        logger.debug('Returning: ' + JSON.stringify(response));
+        logger.info('Success');
         return [200, response];
     }
 }
@@ -454,13 +464,13 @@ async function getProductByField(
         logger.info('Product found: ' + product._id);
         logger.debug(JSON.stringify(product));
 
-        if (
-            !auditActivity(
-                req as RequestDto,
-                HttpMethod.Get,
-                JSON.stringify(product)
-            )
-        ) {
+        const success = await auditActivity(
+            req as RequestDto,
+            HttpMethod.Get,
+            JSON.stringify(product)
+        );
+
+        if (success === false) {
             return [424, 'Audit server not available'];
         } else {
             return [200, product];
@@ -491,13 +501,13 @@ async function getProductById(
         logger.info('Product found: ' + product._id);
         logger.debug(JSON.stringify(product));
 
-        if (
-            !auditActivity(
-                req as RequestDto,
-                HttpMethod.Get,
-                JSON.stringify(product)
-            )
-        ) {
+        const success = await auditActivity(
+            req as RequestDto,
+            HttpMethod.Get,
+            JSON.stringify(product)
+        );
+
+        if (success === false) {
             return [424, 'Audit server not available'];
         } else {
             return [200, product];
@@ -526,13 +536,13 @@ router.delete(
             } else {
                 logger.info(`Product deleted ${req.query.productId}`);
 
-                if (
-                    !auditActivity(
-                        req as RequestDto,
-                        HttpMethod.Delete,
-                        JSON.stringify(product)
-                    )
-                ) {
+                const success = await auditActivity(
+                    req as RequestDto,
+                    HttpMethod.Delete,
+                    JSON.stringify(product)
+                );
+
+                if (success === false) {
                     return res.status(424).send('Audit server not available');
                 }
 
