@@ -1,0 +1,19 @@
+{
+    "name": "products-api service - Development",
+    "audit": {
+        "url": "https://localhost:3001/api/audit",
+        "apiKey": "1234abcd"
+    },
+    "jwt": {
+        "privateKey": "HappyJoy",
+        "expiration": "10h"
+    },
+    "db": {
+        "url": "mongodb://localhost:27017/products"
+    },
+    "log": {
+        "level": "debug",
+        "consoleLogEnabled": true,
+        "fileLogEnabled": false
+    }
+}

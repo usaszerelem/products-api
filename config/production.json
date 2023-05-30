@@ -1,0 +1,4 @@
+{
+    "name": "products-api service - Production",
+    "nodeEnv": "production"
+}

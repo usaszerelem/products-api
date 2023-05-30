@@ -1,0 +1,10 @@
+{
+    "name": "products-api service",
+    "nodeEnv": "development",
+    "port": "3000",
+    "log": {
+        "level": "info",
+        "consoleLogEnabled": false,
+        "fileLogEnabled": false
+    }
+}

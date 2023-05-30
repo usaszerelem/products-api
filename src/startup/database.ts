@@ -1,3 +1,4 @@
+import config from 'config';
 import mongoose from 'mongoose';
 import AppLogger from '../utils/Logger';
 const logger = new AppLogger(module);
@@ -17,7 +18,7 @@ const logger = new AppLogger(module);
  * have to set strict option to true manually.
  */
 
-module.exports = async function () {
+export async function InitDatabase(): Promise<mongoose.Connection> {
     /*
     https://mongoosejs.com/docs/connections.html
 
@@ -31,7 +32,7 @@ module.exports = async function () {
     */
     mongoose.set('strictQuery', false);
 
-    const dbUri = process.env.MONGO_HOST!;
+    const dbUri = config.get('db.url') as string;
     logger.info(`Attempting DB connection to ${dbUri}...`);
 
     await mongoose
@@ -45,6 +46,5 @@ module.exports = async function () {
             throw new Error(msg);
         });
 
-    var db = mongoose.connection;
-    logger.debug('Using database: ' + db.name);
-};
+    return mongoose.connection;
+}

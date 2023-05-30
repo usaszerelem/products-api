@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 import AppLogger from '../utils/Logger';
 import { JwtPayload } from '../models/JwtPayload';
 import JwtPayloadDto from '../dtos/JwtPayloadDto';
+import config from 'config';
 
 const logger = new AppLogger(module);
 
@@ -29,7 +30,7 @@ export default function userAuth(
         try {
             const decoded = jwt.verify(
                 token,
-                process.env.JWT_PRIVATE_KEY as string
+                config.get('jwt.privateKey') as string
             ) as JwtPayloadDto;
 
             let request = req as RequestDto;

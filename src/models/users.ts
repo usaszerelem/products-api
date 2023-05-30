@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const Joi = require('joi-oid');
+
+import config from 'config';
 import jwt from 'jsonwebtoken';
 import UserDto from '../dtos/UserDto';
 import { EAllowedOperations } from './EAllowedOperations';
@@ -67,8 +69,8 @@ export const User = mongoose.model('users', userSchema);
 export function generateAuthToken(user: UserDto): string {
     const token = jwt.sign(
         { userId: user._id, operations: user.operations, audit: user.audit },
-        process.env.JWT_PRIVATE_KEY!,
-        { expiresIn: process.env.JWT_EXPIRATION }
+        config.get('jwt.privateKey')!,
+        { expiresIn: config.get('jwt.expiration') }
     );
 
     return token;

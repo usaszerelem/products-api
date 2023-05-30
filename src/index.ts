@@ -1,69 +1,52 @@
-import express from 'express';
-import https from 'https';
+import config from 'config';
+import express, { Express } from 'express';
 import fs from 'fs';
 import AppLogger from './utils/Logger';
+import { Server as HttpServer } from 'http';
+import https, { Server as HttpsServer } from 'https';
+import { ServerInit } from './startup/serverInit';
 
 const logger = new AppLogger(module);
-const app = express();
+const app: Express = express();
+
+var server: HttpServer<any, any> | HttpsServer<any, any> | undefined =
+    undefined;
+
+type AddressInfo = {
+    address: string;
+    family: string;
+    port: number;
+};
 
 try {
-    logger.info('Loading: ./startup/prod');
-    require('./startup/prod')(app);
+    ServerInit(app);
 
-    logger.info('Loading ./startup/unhandledExceptions');
-    require('./startup/unhandledExceptions')();
+    const port = config.get('port');
 
-    logger.info('Loading: ./startup/database');
-    require('./startup/database')();
-
-    logger.info('Loading: ./startup/routes');
-    require('./startup/routes')(app);
-
-    const port = process.env.PORT;
-
-    var serverSslOptions = {
-        rejectUnauthorized: true,
-        key: fs.readFileSync('./ssl/key.pem'),
-        cert: fs.readFileSync('./ssl/cert.pem'),
-        //ca:     fs.readFileSync('./ssl/ca.crt'),
-        //requestCert:        true
-    };
-
-    if (process.env.NODE_ENV === 'development') {
+    if (config.get('nodeEnv') === 'development') {
+        /*
         logger.warn(
             'Not rejecting unauthorized connections. Running in development mode!'
         );
         serverSslOptions.rejectUnauthorized = false;
+        */
+
+        console.log('HTTP Connection');
+        server = app.listen(port, () => {});
+        serverListening(server.address() as AddressInfo, true);
+    } else {
+        var serverSslOptions = {
+            rejectUnauthorized: true,
+            key: fs.readFileSync('./ssl/key.pem'),
+            cert: fs.readFileSync('./ssl/cert.pem'),
+            //ca: fs.readFileSync('./ssl/ca.crt'),
+            //requestCert: true
+        };
+
+        var httpSrv = https.createServer(serverSslOptions, app);
+        server = httpSrv.listen(port, () => {});
+        serverListening(server.address() as AddressInfo);
     }
-
-    /**
-     * @param {object} serverSslOptions - web server initialization options
-     * @returns {server} - server object
-     */
-    const server = https
-        .createServer(serverSslOptions, app)
-        .listen(port, () => {
-            type AddressInfo = {
-                address: string;
-                family: string;
-                port: number;
-            };
-
-            let addressInfo = server.address() as AddressInfo;
-
-            if (addressInfo.address === '::') {
-                addressInfo.address = 'localhost';
-            }
-
-            const msg =
-                'Listening on https://' +
-                addressInfo.address +
-                ':' +
-                addressInfo.port;
-            logger.info(msg);
-        });
-
-    module.exports = server;
 } catch (ex) {
     if (ex instanceof Error) {
         logger.error(ex.message);
@@ -71,3 +54,29 @@ try {
         logger.error('Fatal exception. Service terminated');
     }
 }
+/**
+ * Logs information about the server's connection
+ * @param addrInfo - information returned from listen()
+ * @param isHttps - 'true' if secure connection
+ */
+
+function serverListening(
+    addrInfo: AddressInfo,
+    isHttps: boolean = false
+): void {
+    if (addrInfo?.address === '::') {
+        addrInfo.address = 'localhost';
+    }
+
+    if (isHttps === true) {
+        logger.info(
+            'Listening on https://' + addrInfo.address + ':' + addrInfo.port
+        );
+    } else {
+        logger.info(
+            'Listening on http://' + addrInfo.address + ':' + addrInfo.port
+        );
+    }
+}
+
+export default server;

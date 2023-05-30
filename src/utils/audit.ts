@@ -1,7 +1,8 @@
 import { RequestDto } from '../dtos/RequestDto';
-import axios from 'axios';
-import AppLogger from '../utils/Logger';
-const logger = new AppLogger(module);
+//import axios from 'axios';
+//import config from 'config';
+//import AppLogger from '../utils/Logger';
+//const logger = new AppLogger(module);
 
 export enum HttpMethod {
     Post,
@@ -12,22 +13,26 @@ export enum HttpMethod {
 }
 
 export async function auditActivity(
-    req: RequestDto,
-    method: HttpMethod,
-    data: string
+    _req: RequestDto,
+    _method: HttpMethod,
+    _data: string
 ): Promise<boolean> {
-    const auditUrl = process.env.AUDIT_URL as string;
+    /*
+    const auditUrl = config.get('audit.url') as string;
 
     if (req.Jwt.audit == true && auditUrl?.length > 0) {
         return await sendAudit(req.Jwt.userId, method, data);
     } else {
         return true;
     }
+    */
+
+    return true;
 }
 
 // ----------------------------------------------------------
 // ----------------------------------------------------------
-
+/*
 async function sendAudit(
     userId: string,
     method: HttpMethod,
@@ -49,16 +54,19 @@ async function sendAudit(
         let strPayload = JSON.stringify(body);
         logger.debug(strPayload);
 
+        const auditUrl = config.get('audit.url') as string;
+        const auditApiKey = config.get('audit.apiKey') as string;
+
         // Specifying headers in the config object
         const reqHeader = {
             'content-type': 'application/json',
             'content-length': strPayload.length,
             'User-Agent': srvcName,
             Connection: 'keep-alive',
-            'x-api-key': process.env.AUDIT_API_KEY,
+            'x-api-key': auditApiKey,
         };
 
-        const response = await axios.post(process.env.AUDIT_URL!, strPayload, {
+        const response = await axios.post(auditUrl!, strPayload, {
             headers: reqHeader,
         });
 
@@ -70,3 +78,4 @@ async function sendAudit(
 
     return success;
 }
+*/

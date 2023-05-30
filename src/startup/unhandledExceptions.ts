@@ -1,7 +1,13 @@
 import AppLogger from '../utils/Logger';
 const logger = new AppLogger(module);
 
-module.exports = function () {
+export function OnUnhandledErrors() {
+    /*
+    [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`].forEach((eventType) => {
+        process.on(eventType, cleanUpServer.bind(null, eventType));
+    });
+    */
+
     // -------------------------------------------------
     // Unhandled synchronous exception. To test:
     // throw new Error('Something crashed');
@@ -19,4 +25,4 @@ module.exports = function () {
         logger.error(ex.message, ex);
         process.exit(1);
     });
-};
+}

@@ -1,0 +1,20 @@
+{
+    "nodeEnv": "NODE_ENV",
+    "port": "PORT",
+    "jwt": {
+        "privateKey": "JWT_PRIVATE_KEY",
+        "expiration": "JWT_EXPIRATION"
+    },
+    "audit": {
+        "url": "AUDIT_URL",
+        "apiKey": "AUDIT_API_KEY"
+    },
+    "db": {
+        "url": "MONGO_HOST"
+    },
+    "log": {
+        "level": "LOG_LEVEL",
+        "consoleLogEnabled": "CONSOLELOG_ENABLED",
+        "fileLogEnabled": "FILELOG_ENABLED"
+    }
+}

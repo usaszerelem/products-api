@@ -7,4 +7,3 @@ export AUDIT_API_KEY=1234abcd
 export AUDIT_URL='https://localhost:3001/api/audit'
 export JWT_PRIVATE_KEY=HappyJoy
 export JWT_EXPIRATION=10h
-export MONGO_HOST='mongodb://localhost:27017'/products

@@ -1,5 +1,6 @@
 import winston from 'winston';
 import path from 'path';
+import config from 'config';
 import DailyRotateFile = require('winston-daily-rotate-file');
 
 const { combine, timestamp, printf, colorize, json } = winston.format;
@@ -13,6 +14,9 @@ export default class AppLogger {
     private _meta: string;
     private _fileLogger: winston.Logger | null;
     private _consoleLogger: winston.Logger | null;
+    private _logLevel: string;
+    private _consoleLogEnabled: boolean;
+    private _fileLogEnabled: boolean;
 
     constructor(callingModule: { filename: string }) {
         var parts = callingModule.filename.split('/');
@@ -20,6 +24,11 @@ export default class AppLogger {
         this._meta = '';
         this._fileLogger = null;
         this._consoleLogger = null;
+        this._logLevel = config.get('log.level') as string;
+        this._consoleLogEnabled = config.get(
+            'log.consoleLogEnabled'
+        ) as boolean;
+        this._fileLogEnabled = config.get('log.fileLogEnabled') as boolean;
 
         this.configFileLogger(callingModule.filename);
         this.configConsoleLogger(callingModule.filename);
@@ -84,7 +93,7 @@ export default class AppLogger {
             callingModuleFileName.length - 3
         );
 
-        if (process.env.FILELOG_ENABLED && typeof jest === 'undefined') {
+        if (this._fileLogEnabled === true && typeof jest === 'undefined') {
             const fileRotateTransport = new DailyRotateFile({
                 filename: 'AppLog-%DATE%.log',
                 datePattern: 'YYYY-MM-DD',
@@ -92,7 +101,7 @@ export default class AppLogger {
             });
 
             winston.loggers.add(fileLoggerName, {
-                level: process.env.LOG_LEVEL || 'info',
+                level: this._logLevel || 'info',
                 format: combine(timestamp(), json()),
                 transports: [fileRotateTransport],
             });
@@ -120,9 +129,9 @@ export default class AppLogger {
             callingModuleFileName.length - 3
         );
 
-        if (process.env.CONSOLELOG_ENABLED && typeof jest === 'undefined') {
+        if (this._consoleLogEnabled && typeof jest === 'undefined') {
             winston.loggers.add(consoleLoggerName, {
-                level: process.env.LOG_LEVEL || 'info',
+                level: this._logLevel || 'info',
                 format: combine(
                     colorize({ all: true }),
                     timestamp(),
