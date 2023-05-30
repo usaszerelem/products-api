@@ -8,6 +8,7 @@ const config: Config.InitialOptions = {
     preset: 'ts-jest',
     testEnvironment: 'node',
     verbose: true,
+    maxConcurrency: 1,
 };
 
 export default config;

@@ -80,12 +80,6 @@ export default class AppLogger {
      *  so that the name portion can be used to identify the file logger.
      */
     private configFileLogger(callingModuleFileName: string) {
-        /**
-         * If file logging is enabled via the FILELOG_ENABLED environment variable and
-         * jest is not running, then initialize file logger. If jest is running then
-         * we disable logging as logging causes difficult to comprehend jest output.
-         */
-
         let fileLoggerName = 'fileLogger-';
 
         fileLoggerName += callingModuleFileName.slice(
@@ -93,7 +87,7 @@ export default class AppLogger {
             callingModuleFileName.length - 3
         );
 
-        if (this._fileLogEnabled === true && typeof jest === 'undefined') {
+        if (this._fileLogEnabled === true) {
             const fileRotateTransport = new DailyRotateFile({
                 filename: 'AppLog-%DATE%.log',
                 datePattern: 'YYYY-MM-DD',
@@ -116,12 +110,6 @@ export default class AppLogger {
      *  so that the name portion can be used to identify the console logger.
      */
     configConsoleLogger(callingModuleFileName: string): void {
-        /**
-         * If file logging is enabled via the FILELOG_ENABLED environment variable and
-         * jest is not running, then initialize file logger. If jest is running then
-         * we disable logging as logging causes difficult to comprehend jest output.
-         */
-
         let consoleLoggerName = 'consoleLogger-';
 
         consoleLoggerName += callingModuleFileName.slice(
@@ -129,7 +117,7 @@ export default class AppLogger {
             callingModuleFileName.length - 3
         );
 
-        if (this._consoleLogEnabled && typeof jest === 'undefined') {
+        if (this._consoleLogEnabled) {
             winston.loggers.add(consoleLoggerName, {
                 level: this._logLevel || 'info',
                 format: combine(

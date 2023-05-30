@@ -3,10 +3,10 @@ import { ServerInit } from '../../src/startup/serverInit';
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import config from 'config';
-import { createSuperUser } from '../../src/scripts/createSuperUser';
+import { createSuperUser } from '../../src/utils/createSuperUser';
 import JwtPayloadDto from '../../src/dtos/JwtPayloadDto';
 import UserDto from '../../src/dtos/UserDto';
-import { generateAuthToken } from '../../src/models/users';
+import { User, generateAuthToken } from '../../src/models/users';
 import express, { Express } from 'express';
 import { Server } from 'http';
 
@@ -16,24 +16,21 @@ describe('/api/users', () => {
     let superUser: UserDto | null = null;
     let authToken = '';
     let server: Server;
-    let ready = false;
+    let MickeyUserID: string | undefined = '';
 
     beforeAll((done) => {
         done();
     });
 
     afterAll((done) => {
-        mongoose.connection.close();
-
         // Close the server when all tests are done
+        Cleanup();
         server!.close(done);
     });
 
-    it('should initialize server', async () => {
+    it('should run first to initialize server', async () => {
         await ServerInit(app);
-        server = app.listen(3001, () => {
-            ready = true;
-        });
+        server = app.listen(3001, async () => {});
     });
 
     describe('Create super user', () => {
@@ -70,8 +67,6 @@ describe('/api/users', () => {
 
     describe('Mickey Mouse user', () => {
         it('create', async () => {
-            console.log(`Ready: ${ready}`);
-
             const userInfo = {
                 firstName: 'Mickey',
                 lastName: 'Mouse',
@@ -92,13 +87,14 @@ describe('/api/users', () => {
                 .set(reqHeader)
                 .send(userInfo);
 
-            console.log(res);
+            expect([200, 400]).toContain(res.status);
 
-            expect(res.status).toBe(200);
+            const retUsr = res.body as UserDto;
+            expect(retUsr._id).toBeTruthy();
+            MickeyUserID = retUsr._id;
         });
     });
 
-    /*
     describe('Get users', () => {
         it('should fail authentication', async () => {
             const res = await request(server).get('/api/users');
@@ -122,6 +118,105 @@ describe('/api/users', () => {
                 expect(oneUser).toHaveProperty('operations');
             });
         });
+
+        it('should retreive Mickey Mouse user by email address', async () => {
+            const res = await request(server)
+                .get('/api/users')
+                .set('x-auth-token', authToken)
+                .query({ email: 'mickey.mouse@disney.com' });
+
+            expect(res.status).toBe(200);
+            const user = res.body as UserDto;
+
+            expect(user).toHaveProperty('_id');
+            expect(user).toHaveProperty('firstName');
+            expect(user).toHaveProperty('lastName');
+            expect(user).toHaveProperty('email');
+            expect(user).toHaveProperty('operations');
+            expect(user).toHaveProperty('audit');
+            expect(user).toHaveProperty('createdAt');
+            expect(user).toHaveProperty('updatedAt');
+
+            expect(user.operations).toEqual(
+                expect.arrayContaining(['UserList', 'ProdList'])
+            );
+        });
+
+        it('should retreive Mickey Mouse user by user ID', async () => {
+            const res = await request(server)
+                .get('/api/users')
+                .set('x-auth-token', authToken)
+                .query({ userId: MickeyUserID });
+
+            expect(res.status).toBe(200);
+            const user = res.body as UserDto;
+
+            expect(user).toHaveProperty('_id');
+            expect(user).toHaveProperty('firstName');
+            expect(user).toHaveProperty('lastName');
+            expect(user).toHaveProperty('email');
+            expect(user).toHaveProperty('operations');
+            expect(user).toHaveProperty('audit');
+            expect(user).toHaveProperty('createdAt');
+            expect(user).toHaveProperty('updatedAt');
+
+            expect(user.operations).toEqual(
+                expect.arrayContaining(['UserList', 'ProdList'])
+            );
+        });
+
+        it('should retreive Super Duper user by self query', async () => {
+            const res = await request(server)
+                .get('/api/users/me')
+                .set('x-auth-token', authToken)
+                .query({ userId: superUser?._id! });
+
+            expect(res.status).toBe(200);
+            const user = res.body as UserDto;
+
+            expect(user).toHaveProperty('_id');
+            expect(user).toHaveProperty('firstName');
+            expect(user).toHaveProperty('lastName');
+            expect(user).toHaveProperty('email');
+            expect(user).toHaveProperty('operations');
+            expect(user).toHaveProperty('audit');
+            expect(user).toHaveProperty('createdAt');
+            expect(user).toHaveProperty('updatedAt');
+
+            expect(user.operations).toEqual(
+                expect.arrayContaining([
+                    'UserUpsert',
+                    'UserDelete',
+                    'UserList',
+                    'ProdUpsert',
+                    'ProdDelete',
+                    'ProdList',
+                ])
+            );
+        });
+
+        it('should handle invalid length user ID', async () => {
+            const res = await request(server)
+                .get('/api/users')
+                .set('x-auth-token', authToken)
+                .query({ userId: '12345' });
+
+            expect(res.status).toBe(500);
+        });
+
+        it('should handle non existing user ID', async () => {
+            const res = await request(server)
+                .get('/api/users')
+                .set('x-auth-token', authToken)
+                .query({ userId: '6476632f9ebe48c3661ce27f' });
+
+            expect(res.status).toBe(400);
+        });
     });
-    */
 });
+
+async function Cleanup(): Promise<void> {
+    console.log('Inside Cleanup()');
+    await User.deleteMany({});
+    mongoose.connection.close();
+}

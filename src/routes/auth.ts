@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import Joi from 'joi';
 import _ from 'underscore';
 import UserDto from '../dtos/UserDto';
+import { ErrorFormatter } from '../utils/ErrorFormatter';
 
 const router = express.Router();
 const logger = new AppLogger(module);
@@ -22,8 +23,6 @@ const PASSWORD_MAX_LENGTH = 1024;
 
 router.post('/', async (req: Request, res: Response) => {
     try {
-        const msgInvalid = 'Invalid email or password';
-
         const { error } = validateUser(req.body);
 
         if (error) {
@@ -33,9 +32,10 @@ router.post('/', async (req: Request, res: Response) => {
 
         let user = await User.findOne({ email: req.body.email });
 
-        if (_.isUndefined(user) === true) {
-            logger.error(msgInvalid);
-            return res.status(400).send(msgInvalid);
+        if (user === null) {
+            const msg = 'User not registered';
+            logger.error(msg);
+            return res.status(400).send(msg);
         }
 
         // compare plain text password with encrypted password
@@ -46,15 +46,21 @@ router.post('/', async (req: Request, res: Response) => {
         );
 
         if (!validPassword) {
-            logger.error(msgInvalid);
-            return res.status(400).send(msgInvalid);
+            const msg = 'Invalid email or password';
+            logger.error(msg);
+            return res.status(400).send(msg);
         }
 
         const token = generateAuthToken(user as unknown as UserDto);
         logger.info(`User authenticated: ${req.body.email}`);
         return res.header('x-auth-token', token).status(200).send(token);
     } catch (ex) {
-        logger.error(JSON.stringify(ex));
+        const msg = ErrorFormatter(
+            'Fatal authentication request error',
+            ex,
+            __filename
+        );
+        logger.error(msg);
         return res.status(500).send(ex);
     }
 });

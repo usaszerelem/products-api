@@ -9,6 +9,7 @@ import prodCanDelete from '../middleware/prodCanDelete';
 import { HttpMethod, auditActivity } from '../utils/audit';
 import { RequestDto } from '../dtos/RequestDto';
 import _ from 'underscore';
+import { ErrorFormatter } from '../utils/ErrorFormatter';
 
 const logger = new AppLogger(module);
 const router = express.Router();
@@ -86,11 +87,12 @@ router.post(
 
             return res.status(200).json(product);
         } catch (ex) {
-            const msg =
-                ex instanceof Error
-                    ? ex.message
-                    : 'Fatal Exception - Product POST';
-            logger.error(JSON.stringify(msg));
+            const msg = ErrorFormatter(
+                'Fatal error in Product POST',
+                ex,
+                __filename
+            );
+            logger.error(msg);
             return res.status(500).send(msg);
         }
     }
@@ -152,11 +154,12 @@ router.put(
 
             return res.status(200).json(updatedProduct);
         } catch (ex) {
-            const msg =
-                ex instanceof Error
-                    ? ex.message
-                    : 'Fatal Exception - Product PUT';
-            logger.error(JSON.stringify(msg));
+            const msg = ErrorFormatter(
+                'Fatal error in Product PUT',
+                ex,
+                __filename
+            );
+            logger.error(msg);
             return res.status(500).send(msg);
         }
     }
@@ -233,11 +236,12 @@ router.patch(
 
             return res.status(200).json(product);
         } catch (ex) {
-            const msg =
-                ex instanceof Error
-                    ? ex.message
-                    : 'Fatal Exception - Product PATCH';
-            logger.error(JSON.stringify(msg));
+            const msg = ErrorFormatter(
+                'Fatal error in Product PATCH',
+                ex,
+                __filename
+            );
+            logger.error(msg);
             return res.status(500).send(msg);
         }
     }
@@ -275,11 +279,12 @@ router.get(
                 }
             }
         } catch (ex) {
-            const msg =
-                ex instanceof Error
-                    ? ex.message
-                    : 'Fatal Exception - Product GET';
-            logger.error(JSON.stringify(msg));
+            const msg = ErrorFormatter(
+                'Fatal error in Product GET',
+                ex,
+                __filename
+            );
+            logger.error(msg);
             return res.status(500).send(msg);
         }
     }
@@ -549,11 +554,12 @@ router.delete(
                 return res.status(200).send('Success');
             }
         } catch (ex) {
-            const msg =
-                ex instanceof Error
-                    ? ex.message
-                    : 'Fatal Exception - Product DELETE';
-            logger.error(JSON.stringify(msg));
+            const msg = ErrorFormatter(
+                'Fatal error in Product DELETE',
+                ex,
+                __filename
+            );
+            logger.error(msg);
             return res.status(500).send(msg);
         }
     }

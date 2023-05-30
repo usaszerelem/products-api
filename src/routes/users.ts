@@ -9,6 +9,7 @@ import UserDto from '../dtos/UserDto';
 import userCanUpsert from '../middleware/userCanUpsert';
 import userCanList from '../middleware/userCanList';
 import { HttpMethod, auditActivity } from '../utils/audit';
+import { ErrorFormatter } from '../utils/ErrorFormatter';
 
 const router = express.Router();
 const logger = new AppLogger(module);
@@ -76,11 +77,12 @@ router.post(
 
             return res.status(200).json(user);
         } catch (ex) {
-            const msg =
-                ex instanceof Error
-                    ? ex.message
-                    : 'Fatal Exception - Users POST';
-            logger.error(JSON.stringify(msg));
+            const msg = ErrorFormatter(
+                'Fatal error in User POST',
+                ex,
+                __filename
+            );
+            logger.error(msg);
             return res.status(500).send(msg);
         }
     }
@@ -97,7 +99,7 @@ router.get('/me', userAuth, async (req: Request, res: Response) => {
 
         if (_.isUndefined(user) === true) {
             const errMsg = `User with ID ${reqDto.Jwt.userId} was not found`;
-            console.warn(errMsg);
+            logger.warn(errMsg);
             return res.status(400).send(errMsg);
         }
 
@@ -115,9 +117,8 @@ router.get('/me', userAuth, async (req: Request, res: Response) => {
 
         return res.status(200).json(_.omit(user.toObject(), 'password'));
     } catch (ex) {
-        const msg =
-            ex instanceof Error ? ex.message : 'Fatal Exception - Users GET';
-        logger.error(JSON.stringify(msg));
+        const msg = ErrorFormatter('Fatal error in User GET', ex, __filename);
+        logger.error(msg);
         return res.status(500).send(msg);
     }
 });
@@ -139,7 +140,7 @@ router.get(
 
                 if (_.isUndefined(user) === true) {
                     const errMsg = `User with email ${req.query.email} was not found`;
-                    console.warn(errMsg);
+                    logger.warn(errMsg);
                     return res.status(400).send(errMsg);
                 } else {
                     user = user.toObject() as UserDto;
@@ -165,9 +166,9 @@ router.get(
             } else if (_.isUndefined(req.query.userId) === false) {
                 let user = await User.findById(req.query.userId as string);
 
-                if (_.isUndefined(user) === true) {
+                if (user === null) {
                     const errMsg = `User with ID ${req.query.userId} was not found`;
-                    console.warn(errMsg);
+                    logger.warn(errMsg);
                     return res.status(400).send(errMsg);
                 } else {
                     user = user.toObject() as UserDto;
@@ -213,11 +214,12 @@ router.get(
                 return res.status(200).json(users);
             }
         } catch (ex) {
-            const msg =
-                ex instanceof Error
-                    ? ex.message
-                    : 'Fatal Exception - Users GET';
-            logger.error(JSON.stringify(msg));
+            const msg = ErrorFormatter(
+                'Fatal error in User GET',
+                ex,
+                __filename
+            );
+            logger.error(msg);
             return res.status(500).send(msg);
         }
     }
