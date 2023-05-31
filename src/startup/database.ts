@@ -33,15 +33,15 @@ export async function InitDatabase(): Promise<mongoose.Connection> {
     mongoose.set('strictQuery', false);
 
     const dbUri = config.get('db.url') as string;
-    logger.info(`Attempting DB connection to ${dbUri}...`);
+    logger.info(`Attempting DB connection to ${dbUri}`);
 
     await mongoose
         .connect(dbUri)
         .then(() => {
-            logger.info(`Connected to ${dbUri}...`);
+            logger.info(`Connected to ${dbUri}`);
         })
         .catch((err) => {
-            const msg = `Could not connected to ${dbUri}...`;
+            const msg = `Could not connected to ${dbUri}`;
             logger.error(msg, err);
             throw new Error(msg);
         });

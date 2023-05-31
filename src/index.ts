@@ -31,7 +31,6 @@ try {
         serverSslOptions.rejectUnauthorized = false;
         */
 
-        console.log('HTTP Connection');
         server = app.listen(port, () => {});
         serverListening(server.address() as AddressInfo, true);
     } else {

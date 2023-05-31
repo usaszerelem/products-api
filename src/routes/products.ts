@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import { Product, validateProduct } from '../models/product';
 import AppLogger from '../utils/Logger';
-import ProductDto from '../dtos/ProductDto';
+import { ProductDto } from '../dtos/ProductDto';
 import userAuth from '../middleware/userAuth';
 import prodCanUpsert from '../middleware/prodCanUpsert';
 import prodCanList from '../middleware/prodCanList';
@@ -16,25 +16,7 @@ const router = express.Router();
 
 // -------------------------------------------------
 
-const fieldNames = [
-    'sku',
-    'code',
-    'unitOfMeasure',
-    'materialID',
-    'description',
-    'category',
-    'manufacturer',
-    'consumerUnits',
-    'multiPackDiscount',
-    'isMultiCop',
-    'isMultiSkoal',
-    'isMultiRedSeal',
-    'pullPMUSA',
-    'pullPMUSAAll',
-    'pullUSSTC',
-    'multiCanDiscount',
-    'isValidUPC',
-];
+const fieldNames = ['name', 'description', 'unitOfMeasure', 'units', 'inStock'];
 
 /**
  * return object type from a GET call that uses paging.
@@ -114,7 +96,7 @@ router.put(
 
             // Ensure product to update exists
 
-            if (_.isUndefined(await Product.findById(productId)) === true) {
+            if ((await Product.findById(productId)) === null) {
                 const errMsg = `Product with id ${productId} not found`;
                 logger.error(errMsg);
                 return res.status(404).send(errMsg);
@@ -183,7 +165,7 @@ router.patch(
 
             let product = await Product.findById(productId);
 
-            if (_.isUndefined(product) === true) {
+            if (product === null) {
                 const errMsg = `Product with id ${productId} not found`;
                 logger.error(errMsg);
                 return res.status(404).send(errMsg);
@@ -304,6 +286,7 @@ async function getProductsByField(
 
     const pageNumber: number = req.query.pageNumber ? +req.query.pageNumber : 1;
     const pageSize: number = req.query.pageSize ? +req.query.pageSize : 10;
+
     const filter = getFilter(
         req.query.filterByField as string,
         req.query.filterValue as string
@@ -355,7 +338,13 @@ function getFilter(
     var obj: any = {};
 
     if (filterByField !== undefined && filterValue !== undefined) {
-        obj[filterByField] = filterValue;
+        const value = filterValue.toString().trim().toLowerCase();
+
+        if (value === 'true' || value === 'false') {
+            obj[filterByField] = value === 'true' ? true : false;
+        } else {
+            obj[filterByField] = filterValue;
+        }
     }
 
     return obj;

@@ -138,7 +138,7 @@ router.get(
                     email: req.query.email,
                 });
 
-                if (_.isUndefined(user) === true) {
+                if (user === null) {
                     const errMsg = `User with email ${req.query.email} was not found`;
                     logger.warn(errMsg);
                     return res.status(400).send(errMsg);
@@ -199,7 +199,7 @@ router.get(
                     operations: 1,
                 })) as UserDto[];
 
-                logger.info(`Returning ${users.length} users`);
+                logger.info(`Get All Users. Returning ${users.length} users`);
 
                 const success = await auditActivity(
                     req as RequestDto,

@@ -9,6 +9,7 @@ const config: Config.InitialOptions = {
     testEnvironment: 'node',
     verbose: true,
     maxConcurrency: 1,
+    maxWorkers: 1,
 };
 
 export default config;

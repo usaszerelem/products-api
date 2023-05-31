@@ -13,7 +13,7 @@
     },
     "log": {
         "level": "debug",
-        "consoleLogEnabled": true,
+        "consoleLogEnabled": false,
         "fileLogEnabled": false
     }
 }

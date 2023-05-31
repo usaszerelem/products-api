@@ -5,9 +5,10 @@
     "main": "./dist/index.js",
     "scripts": {
         "user": "ts-node ./src/scripts/createSuperUser.ts",
+        "products": "ts-node ./src/scripts/createProducts.ts",
         "start": "ts-node ./src/index.ts",
         "build": "tsc -p tsconfig.build.json && copyfiles ./ssl/* ./dist",
-        "test": "jest --detectOpenHandles"
+        "test": "jest --detectOpenHandles --maxWorkers=1 --maxConcurrency=1"
     },
     "keywords": [],
     "author": "",
