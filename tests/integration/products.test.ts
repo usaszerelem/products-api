@@ -52,7 +52,8 @@ describe('/api/products', () => {
 
             expect(res.status).toBe(200);
 
-            let chocolate = res.body as ProductDto;
+            let chocolate: ProductDto = { ...res.body };
+
             expect(chocolate._id).toBeTruthy();
         });
 
@@ -71,7 +72,8 @@ describe('/api/products', () => {
 
             expect(res.status).toBe(200);
 
-            const returnedProd = res.body as ProductDto;
+            const returnedProd: ProductDto = { ...res.body };
+
             expect(returnedProd).toHaveProperty('_id');
             expect(returnedProd).toHaveProperty('name');
             expect(returnedProd).toHaveProperty('description');

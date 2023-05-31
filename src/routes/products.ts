@@ -450,7 +450,7 @@ async function getProductByField(
 
     const product = (await Product.findOne(filter)) as ProductDto;
 
-    if (_.isUndefined(product) === true) {
+    if (_.isUndefined(product) === true || product === null) {
         const errMsg = `Product with ID ${req.query.productId} was not found`;
         console.warn(errMsg);
         return [400, errMsg];
@@ -487,7 +487,7 @@ async function getProductById(
         req.query.productId as string
     )) as ProductDto;
 
-    if (_.isUndefined(product) === true) {
+    if (_.isUndefined(product) === true || product === null) {
         const errMsg = `Product with ID ${req.query.productId} was not found`;
         console.warn(errMsg);
         return [400, errMsg];
@@ -525,7 +525,7 @@ router.delete(
                 req.query.productId as string
             )) as ProductDto;
 
-            if (_.isUndefined(product) === true) {
+            if (_.isUndefined(product) === true || product === null) {
                 return res.status(404).send('Not found');
             } else {
                 logger.info(`Product deleted ${req.query.productId}`);
