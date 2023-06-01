@@ -11,6 +11,10 @@ export interface ProductDto {
 export interface ProductsGetAllDto {
     pageSize: Number;
     pageNumber: Number;
-    _links: Object;
+    _links: {
+        base: String;
+        next?: String;
+        prev?: String;
+    };
     results: ProductDto[];
 }
