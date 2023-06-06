@@ -123,5 +123,37 @@ describe('/api/products', () => {
             const response = res.body as ProductDto;
             expect(response.inStock).toBe(false);
         });
+
+        it('should update a product', async () => {
+            let prod = lindtChocolate;
+
+            let savedProd = new Product(prod);
+            savedProd = await savedProd.save();
+
+            const updatedLindtChocolate: ProductDto = {
+                name: 'Lindt Cherry',
+                description: 'Cherry flavored delicious chocolate',
+                unitOfMeasure: 'GRAM',
+                units: 200,
+                inStock: false,
+            };
+
+            const res = await request(testData.server)
+                .put('/api/products')
+                .set('x-auth-token', testData.adminAuthToken)
+                .send(updatedLindtChocolate)
+                .query({ productId: savedProd._id.toString() });
+
+            expect(res.status).toBe(200);
+
+            const response = res.body as ProductDto;
+            expect(response.name).toBe('Lindt Cherry');
+            expect(response.description).toBe(
+                'Cherry flavored delicious chocolate'
+            );
+            expect(response.unitOfMeasure).toBe('GRAM');
+            expect(response.units).toBe(200);
+            expect(response.inStock).toBe(false);
+        });
     });
 });
