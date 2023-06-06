@@ -21,6 +21,9 @@ brew services start mongodb/brew/mongodb-community
 Or, if you don't want/need a background service you can just run:
 mongod --config /usr/local/etc/mongod.conf
 
+You can also start a docker service locally with:
+docker run -p 27017:27017 --name products -d mongo:latest
+
 ## Configuration
 
 A very flexible configuration option was implemented where there are default, production, development and test configuration settings. All these can be overwritten by environment variables.
