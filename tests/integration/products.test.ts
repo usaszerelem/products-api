@@ -2,7 +2,6 @@ import request from 'supertest';
 import { ProductDto, ProductsGetAllDto } from '../../src/dtos/ProductDto';
 import { StartupReturn, Startup, Shutdown } from './common';
 import { Product } from '../../src/models/product';
-import mongoose from 'mongoose';
 import AppLogger from '../../src/utils/Logger';
 import { createProducts } from '../../src/utils/createProducts';
 const logger = new AppLogger(module);
@@ -58,9 +57,7 @@ describe('/api/products', () => {
         });
 
         it('should get one product by ID', async () => {
-            let prodId = new mongoose.Types.ObjectId();
             let prod = lindtChocolate;
-            prod._id = prodId.toString();
 
             let savedProd = new Product(prod);
             savedProd = await savedProd.save();
@@ -68,9 +65,10 @@ describe('/api/products', () => {
             const res = await request(testData.server)
                 .get('/api/products')
                 .set('x-auth-token', testData.adminAuthToken)
-                .query({ productId: prod._id });
+                .query({ productId: savedProd._id.toString() });
 
             expect(res.status).toBe(200);
+            console.log('Returned: ' + JSON.stringify(res, null, 2));
 
             const returnedProd: ProductDto = { ...res.body };
 
@@ -106,6 +104,24 @@ describe('/api/products', () => {
             expect(response.results[0]).not.toHaveProperty('unitOfMeasure');
             expect(response.results[0]).not.toHaveProperty('units');
             expect(response.results[0]).not.toHaveProperty('inStock');
+        });
+
+        it('should patch a product', async () => {
+            let prod = lindtChocolate;
+
+            let savedProd = new Product(prod);
+            savedProd = await savedProd.save();
+
+            const res = await request(testData.server)
+                .patch('/api/products')
+                .set('x-auth-token', testData.adminAuthToken)
+                .send({ inStock: false })
+                .query({ productId: savedProd._id.toString() });
+
+            expect(res.status).toBe(200);
+
+            const response = res.body as ProductDto;
+            expect(response.inStock).toBe(false);
         });
     });
 });

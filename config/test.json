@@ -1,5 +1,5 @@
 {
-    "name": "products-api service - Development",
+    "name": "products-api service - Test",
     "audit": {
         "url": "",
         "apiKey": ""
@@ -13,7 +13,7 @@
     },
     "log": {
         "level": "debug",
-        "consoleLogEnabled": false,
+        "consoleLogEnabled": true,
         "fileLogEnabled": false
     }
 }

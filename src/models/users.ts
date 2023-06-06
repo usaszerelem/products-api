@@ -6,8 +6,6 @@ import jwt from 'jsonwebtoken';
 import UserDto from '../dtos/UserDto';
 import { EAllowedOperations } from './EAllowedOperations';
 
-require('../utils/constants');
-
 // ----------------------------------------------------------------
 // Field min/max length
 

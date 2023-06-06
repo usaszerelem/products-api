@@ -6,7 +6,7 @@ import userAuth from '../middleware/userAuth';
 import prodCanUpsert from '../middleware/prodCanUpsert';
 import prodCanList from '../middleware/prodCanList';
 import prodCanDelete from '../middleware/prodCanDelete';
-import { HttpMethod, auditActivity } from '../utils/audit';
+import { HttpMethod, auditAuthUserActivity } from '../utils/audit';
 import { RequestDto } from '../dtos/RequestDto';
 import _ from 'underscore';
 import { ErrorFormatter } from '../utils/ErrorFormatter';
@@ -47,7 +47,7 @@ router.post(
             const { error } = validateProduct(req.body);
 
             if (error) {
-                logger.error('Product information failed validation');
+                logger.error(error.message);
                 return res.status(400).send(error.details[0].message);
             }
 
@@ -57,7 +57,7 @@ router.post(
             logger.info('Product was added. ProductID: ' + product._id);
             logger.debug(JSON.stringify(product));
 
-            const success = await auditActivity(
+            const success = await auditAuthUserActivity(
                 req as RequestDto,
                 HttpMethod.Post,
                 JSON.stringify(product)
@@ -124,7 +124,7 @@ router.put(
             logger.info('Product was updated. ProductID: ' + productId);
             logger.debug(JSON.stringify(updatedProduct));
 
-            const success = await auditActivity(
+            const success = await auditAuthUserActivity(
                 req as RequestDto,
                 HttpMethod.Put,
                 JSON.stringify(updatedProduct)
@@ -206,7 +206,7 @@ router.patch(
             logger.info('Product was patched. ProductID: ' + product.productId);
             logger.debug(JSON.stringify(product));
 
-            const success = await auditActivity(
+            const success = await auditAuthUserActivity(
                 req as RequestDto,
                 HttpMethod.Patch,
                 JSON.stringify(product)
@@ -237,6 +237,8 @@ router.get(
     [userAuth, prodCanList],
     async (req: Request, res: Response) => {
         try {
+            logger.debug('Received productId: ' + req.query.productId);
+
             if (req.query.productId || req.query.sku) {
                 let result: [number, ProductDto | string];
 
@@ -306,7 +308,7 @@ async function getProductsByField(
         .sort(sortField)
         .select(getFields)) as ProductDto[];
 
-    const success = await auditActivity(
+    const success = await auditAuthUserActivity(
         req as RequestDto,
         HttpMethod.Get,
         JSON.stringify(products)
@@ -458,7 +460,7 @@ async function getProductByField(
         logger.info('Product found: ' + product._id);
         logger.debug(JSON.stringify(product));
 
-        const success = await auditActivity(
+        const success = await auditAuthUserActivity(
             req as RequestDto,
             HttpMethod.Get,
             JSON.stringify(product)
@@ -495,7 +497,7 @@ async function getProductById(
         logger.info('Product found: ' + product._id);
         logger.debug(JSON.stringify(product));
 
-        const success = await auditActivity(
+        const success = await auditAuthUserActivity(
             req as RequestDto,
             HttpMethod.Get,
             JSON.stringify(product)
@@ -530,7 +532,7 @@ router.delete(
             } else {
                 logger.info(`Product deleted ${req.query.productId}`);
 
-                const success = await auditActivity(
+                const success = await auditAuthUserActivity(
                     req as RequestDto,
                     HttpMethod.Delete,
                     JSON.stringify(product)

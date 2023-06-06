@@ -8,8 +8,9 @@ import userAuth from '../middleware/userAuth';
 import UserDto from '../dtos/UserDto';
 import userCanUpsert from '../middleware/userCanUpsert';
 import userCanList from '../middleware/userCanList';
-import { HttpMethod, auditActivity } from '../utils/audit';
+import { HttpMethod, auditAuthUserActivity } from '../utils/audit';
 import { ErrorFormatter } from '../utils/ErrorFormatter';
+import userCanDelete from '../middleware/userCanDelete';
 
 const router = express.Router();
 const logger = new AppLogger(module);
@@ -65,7 +66,7 @@ router.post(
 
             const dataToSend = JSON.stringify(user);
 
-            const success = await auditActivity(
+            const success = await auditAuthUserActivity(
                 req as RequestDto,
                 HttpMethod.Post,
                 JSON.stringify(dataToSend)
@@ -105,7 +106,7 @@ router.get('/me', userAuth, async (req: Request, res: Response) => {
 
         const dataToSend = JSON.stringify(_.omit(user.toObject(), 'password'));
 
-        const success = await auditActivity(
+        const success = await auditAuthUserActivity(
             req as RequestDto,
             HttpMethod.Get,
             JSON.stringify(dataToSend)
@@ -149,7 +150,7 @@ router.get(
                     logger.info('User found: ' + user!._id);
                     logger.debug(JSON.stringify(user));
 
-                    const success = await auditActivity(
+                    const success = await auditAuthUserActivity(
                         req as RequestDto,
                         HttpMethod.Get,
                         JSON.stringify(user)
@@ -177,7 +178,7 @@ router.get(
                     logger.info('User found: ' + user!._id);
                     logger.debug(JSON.stringify(user));
 
-                    const success = await auditActivity(
+                    const success = await auditAuthUserActivity(
                         req as RequestDto,
                         HttpMethod.Get,
                         JSON.stringify(user)
@@ -201,7 +202,7 @@ router.get(
 
                 logger.info(`Get All Users. Returning ${users.length} users`);
 
-                const success = await auditActivity(
+                const success = await auditAuthUserActivity(
                     req as RequestDto,
                     HttpMethod.Get,
                     JSON.stringify(users)
@@ -216,6 +217,45 @@ router.get(
         } catch (ex) {
             const msg = ErrorFormatter(
                 'Fatal error in User GET',
+                ex,
+                __filename
+            );
+            logger.error(msg);
+            return res.status(500).send(msg);
+        }
+    }
+);
+
+router.delete(
+    '/',
+    [userAuth, userCanDelete],
+    async (req: Request, res: Response) => {
+        try {
+            if (_.isUndefined(req.query.userId) === true) {
+                const errMsg = 'Unabled to delete user. User ID not provided';
+                logger.error(errMsg);
+                return res.status(400).send(errMsg);
+            }
+
+            if (req.query.userId === (req as RequestDto).Jwt.userId) {
+                const errMsg = 'Cannot delete self';
+                logger.error(errMsg);
+                return res.status(403).send(errMsg);
+            }
+
+            let user = await User.findById(req.query.userId as string);
+
+            if (user === null) {
+                const errMsg = `User with ID ${req.query.userId} was not found`;
+                logger.warn(errMsg);
+                return res.status(404).send(errMsg);
+            }
+
+            await User.deleteOne({ _id: req.query.userId });
+            return res.status(200).send('Success');
+        } catch (ex) {
+            const msg = ErrorFormatter(
+                'Fatal error in User DELETE',
                 ex,
                 __filename
             );

@@ -50,10 +50,8 @@ describe('/api/users', () => {
 
             var _beforeEach = async function () {
                 // Create regular user
-                userId = new mongoose.Types.ObjectId();
 
                 let user = new User({
-                    _id: userId,
                     firstName: 'Mickey',
                     lastName: 'Mouse',
                     email: 'mickey.mouse@disney.com',
@@ -63,12 +61,13 @@ describe('/api/users', () => {
                 });
 
                 user = await user.save();
+                userId = user._id;
                 userAuthToken = generateAuthToken(user!);
             };
 
             var _afterEach = async function () {
                 // Delete regular user
-                await User.deleteOne({ _id: userId });
+                await User.deleteOne({ _id: userId.toString() });
             };
 
             beforeEach(_beforeEach);
@@ -89,7 +88,7 @@ describe('/api/users', () => {
                 expect(decoded.audit).toBe(true);
             });
 
-            it('should retreive reguler user by email address', async () => {
+            it('should retrieve reguler user by email address', async () => {
                 const res = await request(testData.server)
                     .get('/api/users')
                     .set('x-auth-token', userAuthToken)
@@ -112,7 +111,7 @@ describe('/api/users', () => {
                 );
             });
 
-            it('should retreive regular user by user ID', async () => {
+            it('should retrieve regular user by user ID', async () => {
                 const strUserId = userId.toString();
 
                 const res = await request(testData.server)
@@ -136,6 +135,27 @@ describe('/api/users', () => {
                 expect(user.operations).toEqual(
                     expect.arrayContaining(['UserList', 'ProdList'])
                 );
+            });
+
+            it('should be forbidden to delete', async () => {
+                // Mickey Mouse user does not have UserDelete permissions
+                const strUserId = userId.toString();
+                const res = await request(testData.server)
+                    .delete('/api/users')
+                    .set('x-auth-token', userAuthToken)
+                    .query({ userId: strUserId });
+
+                expect(res.status).toBe(403);
+            });
+
+            it('should delete a user by user ID', async () => {
+                const strUserId = userId.toString();
+                const res = await request(testData.server)
+                    .delete('/api/users')
+                    .set('x-auth-token', testData.adminAuthToken)
+                    .query({ userId: strUserId });
+
+                expect(res.status).toBe(200);
             });
         });
     });

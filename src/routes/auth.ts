@@ -6,6 +6,7 @@ import Joi from 'joi';
 import _ from 'underscore';
 import UserDto from '../dtos/UserDto';
 import { ErrorFormatter } from '../utils/ErrorFormatter';
+import { HttpMethod, sendAudit } from '../utils/audit';
 
 const router = express.Router();
 const logger = new AppLogger(module);
@@ -30,11 +31,18 @@ router.post('/', async (req: Request, res: Response) => {
             return res.status(400).send(error.details[0].message);
         }
 
-        let user = await User.findOne({ email: req.body.email });
+        let user = (await User.findOne({ email: req.body.email })) as UserDto;
 
         if (user === null) {
             const msg = 'User not registered';
             logger.error(msg);
+
+            sendAudit(
+                'unknown',
+                HttpMethod.Post,
+                `Authenticated request failed. User ${req.body.email} not registered`
+            );
+
             return res.status(400).send(msg);
         }
 
@@ -48,11 +56,29 @@ router.post('/', async (req: Request, res: Response) => {
         if (!validPassword) {
             const msg = 'Invalid email or password';
             logger.error(msg);
+
+            sendAudit(
+                user._id as string,
+                HttpMethod.Post,
+                `Invalid password provided by user ${req.body.email}`
+            );
+
             return res.status(400).send(msg);
         }
 
         const token = generateAuthToken(user as unknown as UserDto);
         logger.info(`User authenticated: ${req.body.email}`);
+
+        const success = await sendAudit(
+            user._id as string,
+            HttpMethod.Post,
+            `User authenticated: ${req.body.email}`
+        );
+
+        if (success === false) {
+            return res.status(424).send('Audit server not available');
+        }
+
         return res.header('x-auth-token', token).status(200).send(token);
     } catch (ex) {
         const msg = ErrorFormatter(

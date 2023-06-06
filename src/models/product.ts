@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Joi = require('joi-oid');
 
 const NAME_MIN_LENGTH = 3;
-const NAME_MAX_LENGTH = 12;
+const NAME_MAX_LENGTH = 30;
 const DESC_MIN_LENGTH = 0;
 const DESC_MAX_LENGTH = 200;
 
@@ -52,7 +52,7 @@ export function validateProduct(product: typeof Product) {
         inStock: Joi.boolean(),
         createdAt: Joi.date(),
         updatedAt: Joi.date(),
-    }).options({ allowUnknown: false });
+    }).options({ allowUnknown: true });
 
     return schema.validate(product);
 }
