@@ -57,9 +57,7 @@ describe('/api/products', () => {
         });
 
         it('should get one product by ID', async () => {
-            let prod = lindtChocolate;
-
-            let savedProd = new Product(prod);
+            let savedProd = new Product(lindtChocolate);
             savedProd = await savedProd.save();
 
             const res = await request(testData.server)
@@ -107,9 +105,7 @@ describe('/api/products', () => {
         });
 
         it('should patch a product', async () => {
-            let prod = lindtChocolate;
-
-            let savedProd = new Product(prod);
+            let savedProd = new Product(lindtChocolate);
             savedProd = await savedProd.save();
 
             const res = await request(testData.server)
@@ -125,9 +121,7 @@ describe('/api/products', () => {
         });
 
         it('should update a product', async () => {
-            let prod = lindtChocolate;
-
-            let savedProd = new Product(prod);
+            let savedProd = new Product(lindtChocolate);
             savedProd = await savedProd.save();
 
             const updatedLindtChocolate: ProductDto = {
@@ -154,6 +148,18 @@ describe('/api/products', () => {
             expect(response.unitOfMeasure).toBe('GRAM');
             expect(response.units).toBe(200);
             expect(response.inStock).toBe(false);
+        });
+
+        it('should delete a product', async () => {
+            let savedProd = new Product(lindtChocolate);
+            savedProd = await savedProd.save();
+
+            const res = await request(testData.server)
+                .delete('/api/products')
+                .set('x-auth-token', testData.adminAuthToken)
+                .query({ productId: savedProd._id.toString() });
+
+            expect(res.status).toBe(200);
         });
     });
 });
